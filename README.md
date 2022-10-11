@@ -1,4 +1,4 @@
-# LilacWings
+# LilacWings 1.1
 
 This mod restores unused glide and Super Dragon Boost mechanics for Lilac.
 You are given the wings from the start, double tap Dragon Boost button to activate.
