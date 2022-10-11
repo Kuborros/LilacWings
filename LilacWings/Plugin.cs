@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace LilacWings
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.1.0")]
     public class Plugin : BaseUnityPlugin
     {
         private void Awake()
@@ -19,6 +19,7 @@ namespace LilacWings
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_Init), MethodType.Normal)]
+        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_InAir), MethodType.Normal)]
         static void Postfix(ref bool ___hasSpecialItem)
         {
             if (GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString() == "LILAC")
