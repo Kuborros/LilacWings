@@ -1,8 +1,9 @@
-# LilacWings 1.1
+# LilacWings 1.2
 
 This mod restores unused glide and Super Dragon Boost mechanics for Lilac.
 You are given the wings from the start, double tap Dragon Boost button to activate.
 
+A configuration option is available, on how often Lilac screams at you when Super Boosting. Default is 10%.
 
 ## Prerequisites:
 The mod requires [BepinEx 5](https://github.com/BepInEx/BepInEx) to function. You can download it here:
