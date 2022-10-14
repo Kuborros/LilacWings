@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using System;
 using UnityEngine;
 using Random = System.Random;
 
@@ -40,11 +39,11 @@ namespace LilacWings
     {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_PlaySoundUninterruptable), MethodType.Normal)]
-        static bool Prefix( ref AudioClip sfxClip, bool ___hasSpecialItem, AudioClip ___sfxBigBoostLaunch)
+        static bool Prefix(ref AudioClip sfxClip, bool ___hasSpecialItem, AudioClip ___sfxBigBoostLaunch)
         {
             if (___hasSpecialItem && sfxClip == ___sfxBigBoostLaunch)
             {
-                Random rnd = new Random();
+                Random rnd = new();
                 int yell = rnd.Next(0, 100);
                 if (yell > Plugin.configYellPercent.Value)
                 {
