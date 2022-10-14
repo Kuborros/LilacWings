@@ -38,10 +38,10 @@ namespace LilacWings
     class Patch2
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_PlaySoundUninterruptable), MethodType.Normal)]
-        static bool Prefix(ref AudioClip sfxClip, bool ___hasSpecialItem, AudioClip ___sfxBigBoostLaunch)
+        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_PlayVoice), MethodType.Normal)]
+        static bool Prefix(ref AudioClip sfxClip, bool ___hasSpecialItem, AudioClip[] ___vaExtra)
         {
-            if (___hasSpecialItem && sfxClip == ___sfxBigBoostLaunch)
+            if (___hasSpecialItem && sfxClip == ___vaExtra[0])
             {
                 Random rnd = new();
                 int yell = rnd.Next(0, 100);
