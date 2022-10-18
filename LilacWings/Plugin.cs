@@ -6,15 +6,26 @@ using Random = System.Random;
 
 namespace LilacWings
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.2.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.3.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<int> configYellPercent;
+        public static ConfigEntry<bool> configWingAsPowerUp;
         private void Awake()
         {
             configYellPercent = Config.Bind("General", "YellChance", 10, new ConfigDescription("Set the percent of how often you want Lilac to scream when super boosting. 0 = Never, 100 = Every time", new AcceptableValueRange<int>(0, 100)));
+            configWingAsPowerUp = Config.Bind("General", "WingsAsPowerUp", false, "Set if you want the wings to be a powerup you need to find on the stage.");
             var harmony = new Harmony("com.kuborro.plugins.fp2.lilacwings");
-            harmony.PatchAll(typeof(Patch));
+
+            if (!configWingAsPowerUp.Value)
+            {
+                harmony.PatchAll(typeof(Patch));
+            }
+            else
+            {
+                harmony.PatchAll(typeof(Patch3));
+                harmony.PatchAll(typeof(Patch4));
+            }
             harmony.PatchAll(typeof(Patch2));
         }
     }
@@ -56,5 +67,36 @@ namespace LilacWings
 
         }
 
+    }
+
+    public class Patch3
+    {
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ItemFuel), "CollisionCheck")]
+        static void Postfix()
+        {
+            FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
+            if (player.characterID.ToString() == "LILAC")
+            {
+                player.hasSpecialItem = true;
+                player.powerupTimer = 0;
+                player.flashTime = 0;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_CrushKO), MethodType.Normal)]
+    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_KO), MethodType.Normal)]
+    [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_FallKO), MethodType.Normal)]
+    public class Patch4
+    {
+        static void Prefix()
+        {
+            FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
+            if (player.characterID.ToString() == "LILAC")
+            {
+                player.hasSpecialItem = false;
+            }
+        }
     }
 }
