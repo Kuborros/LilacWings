@@ -88,7 +88,6 @@ namespace LilacWings
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_CrushKO), MethodType.Normal)]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_KO), MethodType.Normal)]
-        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_FallKO), MethodType.Normal)]
         static void Postfix()
         {
             FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
