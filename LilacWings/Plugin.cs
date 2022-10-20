@@ -6,7 +6,7 @@ using Random = System.Random;
 
 namespace LilacWings
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.3.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.3.1")]
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<int> configYellPercent;
@@ -72,14 +72,16 @@ namespace LilacWings
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ItemFuel), "CollisionCheck")]
-        static void Postfix()
+        static void Postfix(ItemFuel __instance, FPHitBox ___hbItem)
         {
             FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
-            if (player.characterID.ToString() == "LILAC")
-            {
-                player.hasSpecialItem = true;
-                player.powerupTimer = 0;
-                player.flashTime = 0;
+            if (player != null) { 
+                if (player.characterID.ToString() == "LILAC" && FPCollision.CheckOOBB(__instance, ___hbItem, player, player.hbTouch, false, false, false))
+                {
+                    player.hasSpecialItem = true;
+                    player.powerupTimer = 0;
+                    player.flashTime = 0;
+                }
             }
         }
     }
