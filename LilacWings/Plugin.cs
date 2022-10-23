@@ -7,6 +7,8 @@ using Random = System.Random;
 namespace LilacWings
 {
     [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.3.1")]
+    [BepInProcess("FP2.exe")]
+    [BepInIncompatibility("com.micg.plugins.fp2.rebalance")]
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<int> configYellPercent;
