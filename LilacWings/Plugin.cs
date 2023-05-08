@@ -57,7 +57,7 @@ namespace LilacWings
             if (___hasSpecialItem && voiceClip == ___vaExtra[0])
             {
                 Random rnd = new();
-                int yell = rnd.Next(0, 100);
+                int yell = rnd.Next(1, 100);
                 if (yell > Plugin.configYellPercent.Value)
                 {
                     return false;
