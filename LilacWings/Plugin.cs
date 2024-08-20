@@ -6,7 +6,7 @@ using Random = System.Random;
 
 namespace LilacWings
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.3.2")]
+    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.4.0")]
     [BepInProcess("FP2.exe")]
     [BepInIncompatibility("com.micg.plugins.fp2.rebalance")]
     public class Plugin : BaseUnityPlugin
@@ -36,37 +36,36 @@ namespace LilacWings
     class Patch
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_Init), MethodType.Normal)]
-        [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_InAir), MethodType.Normal)]
-        static void Postfix(ref bool ___hasSpecialItem)
+        [HarmonyPatch(typeof(FPPlayer), "Start", MethodType.Normal)]
+        static void PatchFPPlayerStart(ref bool ___hasSpecialItem)
         {
-            if (GameObject.Find("Player 1").GetComponent<FPPlayer>().characterID.ToString() == "LILAC")
+            if (FPSaveManager.character == FPCharacterID.LILAC)
             {
                 ___hasSpecialItem = true;
             }
         }
-
     }
 
     class Patch2
     {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_PlayVoice), MethodType.Normal)]
-        static bool Prefix(ref AudioClip voiceClip, bool ___hasSpecialItem, AudioClip[] ___vaExtra)
+        static bool PatchFPPlayerPlayVoice(ref AudioClip voiceClip, bool ___hasSpecialItem, AudioClip[] ___vaExtra)
         {
-            if (___hasSpecialItem && voiceClip == ___vaExtra[0])
+            if (___vaExtra.Length > 0)
             {
-                Random rnd = new();
-                int yell = rnd.Next(0, 100);
-                if (yell > Plugin.configYellPercent.Value)
+                if (___hasSpecialItem && voiceClip == ___vaExtra[0])
                 {
-                    return false;
-                    //Simply not run the method at all
+                    Random rnd = new();
+                    int yell = rnd.Next(0, 100);
+                    if (yell > Plugin.configYellPercent.Value)
+                    {
+                        return false;
+                        //Simply not run the method at all
+                    }
                 }
             }
             return true;
-
-
         }
 
     }
@@ -74,7 +73,7 @@ namespace LilacWings
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ItemFuel), "CollisionCheck")]
-        static void Postfix(ItemFuel __instance, FPHitBox ___hbItem)
+        static void PatchItemFuelColCheck(ItemFuel __instance, FPHitBox ___hbItem)
         {
             FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
             if (player != null) { 
@@ -92,12 +91,11 @@ namespace LilacWings
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_CrushKO), MethodType.Normal)]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_KO), MethodType.Normal)]
-        static void Postfix()
+        static void PatchFPPlayerKOStates(ref bool ___hasSpecialItem)
         {
-            FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
-            if (player.characterID.ToString() == "LILAC")
+            if (FPSaveManager.character == FPCharacterID.LILAC)
             {
-                player.hasSpecialItem = false;
+                ___hasSpecialItem = false;
             }
         }
     }
