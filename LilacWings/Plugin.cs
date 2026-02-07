@@ -2,14 +2,14 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 namespace LilacWings
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWingsRestorer", "1.4.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.lilacwings", "LilacWings", "1.5.0")]
     [BepInProcess("FP2.exe")]
     [BepInIncompatibility("com.micg.plugins.fp2.rebalance")]
-    public class Plugin : BaseUnityPlugin
+    public class LilacWings : BaseUnityPlugin
     {
         public static ConfigEntry<int> configYellPercent;
         public static ConfigEntry<bool> configWingAsPowerUp;
@@ -17,23 +17,23 @@ namespace LilacWings
         {
             configYellPercent = Config.Bind("General", "YellChance", 10, new ConfigDescription("Set the percent of how often you want Lilac to scream when super boosting. 0 = Never, 100 = Every time", new AcceptableValueRange<int>(0, 100)));
             configWingAsPowerUp = Config.Bind("General", "WingsAsPowerUp", false, "Set if you want the wings to be a powerup you need to find on the stage.");
-            var harmony = new Harmony("com.kuborro.plugins.fp2.lilacwings");
 
+            var harmony = new Harmony("com.kuborro.plugins.fp2.lilacwings");
             if (!configWingAsPowerUp.Value)
             {
-                harmony.PatchAll(typeof(Patch));
+                harmony.PatchAll(typeof(PatchPlayerStart));
             }
             else
             {
-                harmony.PatchAll(typeof(Patch3));
-                harmony.PatchAll(typeof(Patch4));
+                harmony.PatchAll(typeof(PatchItemFuel));
+                harmony.PatchAll(typeof(PatchKOState));
             }
-            harmony.PatchAll(typeof(Patch2));
+            harmony.PatchAll(typeof(PatchPlayerVoice));
         }
     }
 
 
-    class Patch
+    class PatchPlayerStart
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPPlayer), "Start", MethodType.Normal)]
@@ -46,30 +46,32 @@ namespace LilacWings
         }
     }
 
-    class Patch2
+    class PatchPlayerVoice
     {
         [HarmonyPrefix]
+        [HarmonyWrapSafe]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.Action_PlayVoice), MethodType.Normal)]
-        static bool PatchFPPlayerPlayVoice(ref AudioClip voiceClip, bool ___hasSpecialItem, AudioClip[] ___vaExtra)
+        static bool PatchFPPlayerPlayVoice(ref AudioClip voiceClip, bool ___hasSpecialItem, AudioClip[] ___vaExtra, FPPlayer __instance)
         {
-            if (___vaExtra.Length > 0)
+            if (__instance.characterID == FPCharacterID.LILAC)
             {
-                if (___hasSpecialItem && voiceClip == ___vaExtra[0])
+                if (___vaExtra.Length > 0)
                 {
-                    Random rnd = new();
-                    int yell = rnd.Next(0, 100);
-                    if (yell > Plugin.configYellPercent.Value)
+                    if (___hasSpecialItem && voiceClip == ___vaExtra[0])
                     {
-                        return false;
-                        //Simply not run the method at all
+                        int yell = Random.Range(0, 101);
+                        if (yell > LilacWings.configYellPercent.Value)
+                        {
+                            return false;
+                            //Simply not run the method at all
+                        }
                     }
                 }
             }
             return true;
         }
-
     }
-    public class Patch3
+    public class PatchItemFuel
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ItemFuel), "CollisionCheck")]
@@ -77,7 +79,7 @@ namespace LilacWings
         {
             FPPlayer player = GameObject.Find("Player 1").GetComponent<FPPlayer>();
             if (player != null) { 
-                if (player.characterID.ToString() == "LILAC" && FPCollision.CheckOOBB(__instance, ___hbItem, player, player.hbTouch, false, false, false))
+                if (player.characterID == FPCharacterID.LILAC && FPCollision.CheckOOBB(__instance, ___hbItem, player, player.hbTouch, false, false, false))
                 {
                     player.hasSpecialItem = true;
                     player.powerupTimer = 0;
@@ -86,7 +88,7 @@ namespace LilacWings
             }
         }
     }
-    public class Patch4
+    public class PatchKOState
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPPlayer), nameof(FPPlayer.State_CrushKO), MethodType.Normal)]
